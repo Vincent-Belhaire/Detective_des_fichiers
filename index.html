@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Séance TICE 6e : apprendre à reconnaître, rechercher et vérifier des fichiers.">
+  <meta name="theme-color" content="#2c2a4a">
+  <title>Détective des fichiers · Mission TICE 6e</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23ffb627'/%3E%3Ccircle cx='28' cy='27' r='15' fill='none' stroke='%232c2a4a' stroke-width='6'/%3E%3Cpath d='m39 39 14 14' stroke='%232c2a4a' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au défi</a>
+
+  <header class="site-header">
+    <button class="brand" id="homeButton" type="button" aria-label="Retour à l’accueil">
+      <span class="brand-mark" aria-hidden="true">⌕</span>
+      <span>Détective des <strong>fichiers</strong></span>
+    </button>
+    <div class="header-actions">
+      <span class="level-pill">TICE · 6e</span>
+      <button class="outline-button light" id="helpButton" type="button">? Aide</button>
+    </div>
+  </header>
+
+  <aside class="mission-bar" id="missionBar" hidden aria-label="Progression de la mission">
+    <div class="mission-bar__inner">
+      <p id="missionCount">Défi 1 sur 8</p>
+      <div class="progress-track" role="progressbar" aria-label="Progression de la mission" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span id="progressFill"></span>
+      </div>
+      <p class="score-chip"><span aria-hidden="true">★</span> <strong id="scoreValue">0</strong> pts</p>
+    </div>
+  </aside>
+
+  <main id="main">
+    <section class="screen welcome is-active" id="welcomeScreen" aria-labelledby="welcomeTitle">
+      <div class="welcome-grid">
+        <div>
+          <p class="eyebrow">MISSION TICE · SÉANCE 05</p>
+          <h1 id="welcomeTitle">Qui retrouvera le <span>fichier mystère&nbsp;?</span></h1>
+          <p class="lede">Pixel a besoin d’un œil de lynx. Examine les noms, extensions, propriétés et chemins pour retrouver les bons fichiers sans te tromper.</p>
+          <div class="start-row">
+            <button class="primary-button" id="startButton" type="button">Commencer l’enquête →</button>
+            <p><strong>55 min</strong><br><span>Seul ou en binôme</span></p>
+          </div>
+        </div>
+
+        <div class="mission-dossier" aria-label="Dossier de mission">
+          <div class="dossier-tab">CONFIDENTIEL</div>
+          <div class="dossier-paper">
+            <div class="pixel-avatar" aria-hidden="true">⌕</div>
+            <p class="dossier-kicker">MESSAGE DE PIXEL</p>
+            <h2>Agent, ouvre l’œil&nbsp;!</h2>
+            <p>Observe chaque indice, vérifie avant de répondre et utilise un coup de pouce si tu bloques. Une bonne enquête se mène avec méthode.</p>
+            <span class="stamp">8 DÉFIS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="briefing-card">
+        <p class="eyebrow">TON PLAN DE MISSION</p>
+        <h2>55 minutes pour devenir détective</h2>
+        <ol class="timeline" aria-label="Déroulé de la séance">
+          <li><span class="time">05</span><strong>Briefing</strong><small>Comprendre l’enquête</small></li>
+          <li><span class="time amber">10</span><strong>Identité</strong><small>Nom, extension, type</small></li>
+          <li><span class="time teal">15</span><strong>Explorateur</strong><small>Trier et examiner</small></li>
+          <li><span class="time purple">15</span><strong>Pistes</strong><small>Filtrer et rechercher</small></li>
+          <li><span class="time coral">10</span><strong>Mystère + bilan</strong><small>Recouper les indices</small></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="screen challenge-screen" id="challengeScreen" aria-labelledby="challengeTitle">
+      <div class="challenge-heading">
+        <div>
+          <p class="eyebrow" id="challengeEyebrow">DÉFI 01 · IDENTITÉ</p>
+          <h1 id="challengeTitle">Carte d’identité des fichiers</h1>
+        </div>
+        <button class="hint-button" id="hintButton" type="button">💡 Coup de pouce</button>
+      </div>
+
+      <div class="instruction-card" id="instructionCard">
+        <span class="instruction-number" id="instructionNumber">1</span>
+        <p><span class="instruction-label" id="instructionLabel">MISSION</span><br><span id="instructionText"></span></p>
+      </div>
+
+      <div id="challengeArena" aria-live="polite"></div>
+      <div class="feedback" id="feedback" role="status">Observe les indices, puis mène l’enquête.</div>
+
+      <div class="screen-actions">
+        <button class="secondary-button" id="quitButton" type="button">Quitter</button>
+        <button class="primary-button" id="nextButton" type="button" disabled>Défi suivant →</button>
+      </div>
+    </section>
+
+    <section class="screen final-screen" id="finalScreen" aria-labelledby="finalTitle">
+      <div class="confetti" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <p class="eyebrow">ENQUÊTE TERMINÉE</p>
+      <h1 id="finalTitle">Le fichier mystère n’a plus aucun secret pour toi&nbsp;!</h1>
+      <p class="lede centered">Tu sais maintenant observer, trier, rechercher et vérifier un fichier avant de l’utiliser.</p>
+      <div class="result-grid">
+        <article class="score-card">
+          <p>SCORE FINAL</p>
+          <strong><span id="finalScore">0</span> <small>/ 100</small></strong>
+          <div class="star-row" id="starRow" aria-label="Étoiles obtenues">☆☆☆</div>
+          <span class="rank-badge" id="rankBadge">Apprenti enquêteur</span>
+        </article>
+        <article class="skills-card">
+          <h2>Compétences acquises</h2>
+          <ul>
+            <li><span>✓</span> Reconnaître les extensions courantes</li>
+            <li><span>✓</span> Distinguer nom, extension, type et chemin</li>
+            <li><span>✓</span> Trier et filtrer dans l’Explorateur</li>
+            <li><span>✓</span> Lire les propriétés d’un fichier</li>
+            <li><span>✓</span> Rechercher avec un mot-clé ou un joker</li>
+          </ul>
+        </article>
+      </div>
+      <div class="result-details" id="resultDetails"></div>
+      <div class="final-actions">
+        <button class="primary-button" id="replayButton" type="button">Rejouer la mission</button>
+        <button class="secondary-button" id="printButton" type="button">Imprimer mon bilan</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-signature">TICE · Technologie · Vincent Belhaire</footer>
+
+  <dialog class="help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+    <div class="dialog-top">
+      <span class="help-icon" aria-hidden="true">?</span>
+      <button type="button" data-close-dialog aria-label="Fermer">×</button>
+    </div>
+    <p class="eyebrow">CARNET DE L’ENQUÊTEUR</p>
+    <h2 id="helpTitle">Besoin d’un indice&nbsp;?</h2>
+    <div id="helpContent"></div>
+    <button class="primary-button" type="button" data-close-dialog>J’ai compris</button>
+  </dialog>
+
+  <dialog class="properties-dialog" id="propertiesDialog" aria-labelledby="propertiesTitle">
+    <div class="window-titlebar">
+      <span id="propertiesTitle">Propriétés de mission_orbite.pdf</span>
+      <button type="button" data-close-properties aria-label="Fermer">×</button>
+    </div>
+    <div class="properties-tabs" aria-hidden="true"><span class="active">Général</span><span>Détails</span></div>
+    <dl class="properties-list">
+      <div><dt>Type de fichier</dt><dd>Document PDF (.pdf)</dd></div>
+      <div><dt>Emplacement</dt><dd>P:\Documents\TICE\Documents</dd></div>
+      <div><dt>Taille</dt><dd>428 Ko (438&nbsp;272 octets)</dd></div>
+      <div><dt>Modifié le</dt><dd>12/02/2026 à 14:32</dd></div>
+    </dl>
+    <div class="dialog-actions"><button class="primary-button" type="button" data-close-properties>OK</button></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>
