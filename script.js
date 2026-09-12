@@ -88,10 +88,12 @@
     current: 0,
     score: 0,
     scores: Array(8).fill(0),
+    errors: Array(8).fill(0),
     stages: Array(8).fill(0),
     done: Array(8).fill(false),
     timerId: null,
     timeLeft: 45,
+    bonusTimeLeft: 0,
     expressStarted: false,
     propertiesViewed: false
   };
@@ -136,6 +138,10 @@
     state.scores[state.current] += points;
     updateMissionBar();
     showToast(`Bonne piste ! +${points} points`);
+  }
+
+  function recordError() {
+    state.errors[state.current]++;
   }
 
   function completeChallenge(message) {
@@ -206,6 +212,7 @@
 
   function checkExtension(zone, answer) {
     if (zone.dataset.type !== answer) {
+      recordError();
       zone.classList.add("wrong");
       setFeedback("Pas tout à fait. Regarde les lettres placées après le dernier point.", "error");
       window.setTimeout(() => zone.classList.remove("wrong"), 650);
@@ -245,6 +252,7 @@
     $$(".answer-button", arena).forEach(button => button.addEventListener("click", () => {
       const chosen = Number(button.dataset.answer);
       if (chosen !== item.correct) {
+        recordError();
         button.classList.add("wrong");
         setFeedback("Ce n’est pas cet élément. Reprends la carte d’identité depuis la gauche.", "error");
         return;
@@ -303,6 +311,7 @@
     if (state.done[2]) return;
     $$('[data-sort]', arena).forEach(button => button.addEventListener("click", () => {
       if (button.dataset.sort !== task.key) {
+        recordError();
         setFeedback(`La colonne « ${button.textContent} » ne permet pas ce tri. Cherche l’en-tête qui correspond exactement à l’indice.`, "error");
         return;
       }
@@ -346,6 +355,7 @@
     $$('[data-answer]', arena).forEach(button => button.addEventListener("click", () => {
       const chosen = Number(button.dataset.answer);
       if (chosen !== item.correct) {
+        recordError();
         button.classList.add("wrong");
         setFeedback("Cette information ne correspond pas à la fiche Propriétés. Ouvre-la et vérifie la bonne ligne.", "error");
         return;
@@ -414,6 +424,7 @@
     if (state.done[4]) return;
     $$('[data-filter]', arena).forEach(filterButton => filterButton.addEventListener("click", () => {
       if (filterButton.dataset.filter !== item.filter) {
+        recordError();
         filterButton.classList.add("wrong");
         setFeedback("Ce filtre masque le type recherché. Repars du premier indice.", "error");
         return;
@@ -428,6 +439,7 @@
     }));
     $$(".candidate-button", arena).forEach(button => button.addEventListener("click", () => {
       if (button.dataset.file !== item.answer) {
+        recordError();
         button.classList.add("wrong");
         setFeedback("Fausse piste : au moins un indice ne correspond pas. Vérifie la taille, la date et le dossier.", "error");
         return;
@@ -461,7 +473,7 @@
           <div class="arena-top"><span class="round-pill">RECHERCHE ${Math.min(stage + 1,3)} / 3</span><span class="mini-progress">${task.hint}</span></div>
           <h2>${task.label}</h2>
           <form class="search-form" id="searchForm">
-            <input id="searchInput" autocomplete="off" aria-label="Ta recherche" placeholder="Exemple : *.pdf">
+            <input id="searchInput" autocomplete="off" aria-label="Ta recherche" placeholder="Par exemple : *.pdf">
             <button class="primary-button" type="submit">Rechercher</button>
           </form>
           <div class="search-results" id="searchResults">Les résultats apparaîtront ici.</div>
@@ -477,6 +489,7 @@
       const results = files.filter(file => matchesQuery(file, value));
       $("#searchResults").innerHTML = results.length ? results.map(file => `<span class="search-result-chip">🔎 ${file.name}</span>`).join("") : "Aucun fichier trouvé.";
       if (value !== task.expected) {
+        recordError();
         setFeedback("La recherche donne peut-être un résultat, mais elle ne correspond pas exactement à la consigne. Utilise le bon mot-clé ou le bon joker.", "error");
         return;
       }
@@ -513,6 +526,7 @@
     if (state.done[6]) return;
     $$(".candidate-button", arena).forEach(button => button.addEventListener("click", () => {
       if (Number(button.dataset.answer) !== 1) {
+        recordError();
         button.classList.add("wrong");
         setFeedback("Ce suspect ne respecte pas tous les indices. Vérifie surtout le dossier final du chemin.", "error");
         return;
@@ -566,7 +580,7 @@
         ring.textContent = state.timeLeft;
         ring.classList.toggle("urgent", state.timeLeft <= 10);
       }
-      if (state.timeLeft <= 0) finishExpress("Temps écoulé !");
+      if (state.timeLeft <= 0) finishExpress("Temps écoulé !", true);
     }, 1000);
     renderExpress();
     setFeedback("Le chrono tourne. Lis vite, mais lis bien !");
@@ -579,6 +593,7 @@
       award(2);
       setFeedback("Bonne réponse !", "success");
     } else {
+      recordError();
       button.classList.add("wrong");
       const correctButton = $$('[data-answer]', arena)[correct];
       if (correctButton) correctButton.classList.add("correct");
@@ -589,8 +604,10 @@
     else window.setTimeout(renderExpress, 360);
   }
 
-  function finishExpress(prefix) {
+  function finishExpress(prefix, timedOut = false) {
     clearTimer();
+    if (timedOut) state.errors[7] += expressQuestions.length - state.stages[7];
+    state.bonusTimeLeft = Math.max(0, state.timeLeft);
     state.done[7] = true;
     nextButton.disabled = false;
     nextButton.textContent = "Voir mon bilan →";
@@ -607,17 +624,64 @@
     clearTimer();
     showScreen(finalScreen);
     const score = state.score;
-    const stars = score >= 85 ? 3 : score >= 60 ? 2 : score >= 35 ? 1 : 0;
-    const rank = score >= 85 ? "Détective expert" : score >= 60 ? "Enquêteur confirmé" : score >= 35 ? "Apprenti détective" : "Observateur en progrès";
+    const challengeNames = ["Extensions et types", "Nom, extension et chemin", "Tri dans l’Explorateur", "Lecture des propriétés", "Filtrage par indices", "Recherche et jokers", "Fichier mystère"];
+    const masteryFor = errors => Math.max(25, 100 - errors * 18);
+    const statusFor = errors => errors === 0
+      ? { className: "", icon: "✓", label: "Acquis" }
+      : errors <= 2
+        ? { className: "consolidate", icon: "!", label: "À consolider" }
+        : { className: "retry", icon: "↻", label: "À revoir" };
+    const challengeMastery = state.errors.slice(0, 7).map(masteryFor);
+    const overallPercent = Math.round(challengeMastery.reduce((sum, value) => sum + value, 0) / challengeMastery.length);
+    const totalErrors = state.errors.reduce((sum, value) => sum + value, 0);
+    const stars = overallPercent >= 90 ? 3 : overallPercent >= 70 ? 2 : overallPercent >= 50 ? 1 : 0;
+    const rank = overallPercent >= 90 ? "Détective expert" : overallPercent >= 70 ? "Enquêteur confirmé" : overallPercent >= 50 ? "Apprenti détective" : "Observateur en progrès";
+    const finalMessage = overallPercent >= 90
+      ? "Pixel te confie officiellement les archives du labo numérique."
+      : overallPercent >= 70
+        ? "Belle enquête ! Quelques vérifications te rendront encore plus efficace."
+        : "Tu as résolu l’affaire. Rejoue les défis signalés pour consolider tes réflexes.";
     $("#finalScore").textContent = score;
+    $("#finalPercent").textContent = `${overallPercent} %`;
+    $("#finalMessage").textContent = finalMessage;
     $("#starRow").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
     $("#starRow").setAttribute("aria-label", `${stars} étoile(s) obtenue(s) sur 3`);
     $("#rankBadge").textContent = rank;
+    $("#errorSummary").textContent = `${totalErrors} erreur${totalErrors > 1 ? "s" : ""} pendant la mission`;
+
+    const skills = [
+      { label: "Reconnaître les extensions courantes", errors: state.errors[0] },
+      { label: "Distinguer nom, extension, type et chemin", errors: state.errors[1] },
+      { label: "Trier dans l’Explorateur", errors: state.errors[2] },
+      { label: "Lire les propriétés d’un fichier", errors: state.errors[3] },
+      { label: "Filtrer et rechercher efficacement", errors: state.errors[4] + state.errors[5] },
+      { label: "Recouper plusieurs indices", errors: state.errors[6] }
+    ];
+    $("#skillsList").innerHTML = skills.map(skill => {
+      const status = statusFor(skill.errors);
+      return `<li class="${status.className}"><span>${status.icon}</span><div><strong>${skill.label}</strong><small>${status.label}${skill.errors ? ` · ${skill.errors} erreur${skill.errors > 1 ? "s" : ""}` : " · sans erreur"}</small></div></li>`;
+    }).join("");
+
+    const badges = [];
+    if (state.errors[0] === 0) badges.push(["🔎", "Œil de lynx", "Extensions sans erreur"]);
+    if (state.errors[2] === 0) badges.push(["↕️", "As du tri", "4 tris maîtrisés"]);
+    if (state.errors[3] === 0) badges.push(["📋", "Expert Propriétés", "Fiche bien déchiffrée"]);
+    if (state.errors[5] === 0) badges.push(["*️⃣", "Maître des jokers", "Recherches précises"]);
+    if (state.errors[6] === 0) badges.push(["🗂️", "Dossier classé", "Mystère résolu"]);
+    if (state.scores[7] >= 12) badges.push(["⏱️", "Enquête express", `${state.scores[7]} / 16 au chrono`]);
+    $("#badgeShelf").innerHTML = badges.length
+      ? badges.map(badge => `<div class="earned-badge"><span>${badge[0]}</span><strong>${badge[1]}</strong><small>${badge[2]}</small></div>`).join("")
+      : '<p class="badge-empty">Rejoue la mission pour décrocher ton premier badge.</p>';
+
     $("#resultDetails").innerHTML = `
-      <div><strong>${state.done.filter(Boolean).length}/8</strong><small>défis terminés</small></div>
-      <div><strong>6</strong><small>extensions reconnues</small></div>
-      <div><strong>4</strong><small>critères de tri</small></div>
-      <div><strong>${state.scores[7]}/16</strong><small>bonus express</small></div>`;
+      <div class="details-heading"><div><p class="eyebrow">RÉSULTATS DÉTAILLÉS</p><h2 id="detailsTitle">Mon enquête, défi par défi</h2></div><div class="core-score"><strong>${state.scores.slice(0,7).reduce((sum,value) => sum + value,0)} / 84</strong><span>points sur les défis principaux</span></div></div>
+      <div class="result-rows">
+        ${challengeNames.map((name,index) => {
+          const status = statusFor(state.errors[index]);
+          return `<article class="result-row ${status.className}"><div class="result-row__head"><strong>Défi ${index + 1}</strong><span>${name}</span></div><div class="result-meter" aria-label="${challengeMastery[index]} % de maîtrise"><span style="width:${challengeMastery[index]}%"></span></div><div class="result-row__meta"><span>${state.errors[index]} erreur${state.errors[index] > 1 ? "s" : ""}</span><span>${state.scores[index]} / ${pointsPerChallenge[index]} pts</span><strong>${status.label}</strong></div></article>`;
+        }).join("")}
+      </div>
+      <div class="bonus-summary"><span>⏱️ Bonus · Enquête express</span><strong>${state.scores[7]} / 16 pts</strong><small>${Math.round(state.scores[7] / 2)} bonne(s) réponse(s) sur 8 · ${state.bonusTimeLeft} seconde(s) restante(s)</small></div>`;
   }
 
   function resetMission() {
@@ -625,9 +689,11 @@
     state.current = 0;
     state.score = 0;
     state.scores.fill(0);
+    state.errors.fill(0);
     state.stages.fill(0);
     state.done.fill(false);
     state.timeLeft = 45;
+    state.bonusTimeLeft = 0;
     state.expressStarted = false;
     state.propertiesViewed = false;
     showScreen(challengeScreen);

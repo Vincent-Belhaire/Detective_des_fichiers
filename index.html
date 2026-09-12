@@ -98,29 +98,29 @@
       <div class="confetti" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <p class="eyebrow">ENQUÊTE TERMINÉE</p>
       <h1 id="finalTitle">Le fichier mystère n’a plus aucun secret pour toi&nbsp;!</h1>
-      <p class="lede centered">Tu sais maintenant observer, trier, rechercher et vérifier un fichier avant de l’utiliser.</p>
+      <p class="lede centered" id="finalMessage">Pixel te confie officiellement les archives du labo numérique.</p>
       <div class="result-grid">
         <article class="score-card">
-          <p>SCORE FINAL</p>
-          <strong><span id="finalScore">0</span> <small>/ 100</small></strong>
+          <p>RÉSULTAT GLOBAL</p>
+          <strong><span id="finalScore">0</span><small> / 100</small></strong>
+          <div class="overall-percent"><strong id="finalPercent">0 %</strong><span>de maîtrise sur les 7 défis</span></div>
           <div class="star-row" id="starRow" aria-label="Étoiles obtenues">☆☆☆</div>
           <span class="rank-badge" id="rankBadge">Apprenti enquêteur</span>
+          <p class="error-summary" id="errorSummary">0 erreur</p>
         </article>
         <article class="skills-card">
-          <h2>Compétences acquises</h2>
-          <ul>
-            <li><span>✓</span> Reconnaître les extensions courantes</li>
-            <li><span>✓</span> Distinguer nom, extension, type et chemin</li>
-            <li><span>✓</span> Trier et filtrer dans l’Explorateur</li>
-            <li><span>✓</span> Lire les propriétés d’un fichier</li>
-            <li><span>✓</span> Rechercher avec un mot-clé ou un joker</li>
-          </ul>
+          <h2>Compétences : où j’en suis</h2>
+          <ul id="skillsList"></ul>
         </article>
       </div>
-      <div class="result-details" id="resultDetails"></div>
+      <section class="badge-shelf" aria-labelledby="badgesTitle">
+        <h2 id="badgesTitle">Mes badges d’enquêteur</h2>
+        <div class="badge-list" id="badgeShelf"></div>
+      </section>
+      <section class="result-details" id="resultDetails" aria-labelledby="detailsTitle"></section>
       <div class="final-actions">
-        <button class="primary-button" id="replayButton" type="button">Rejouer la mission</button>
-        <button class="secondary-button" id="printButton" type="button">Imprimer mon bilan</button>
+        <button class="secondary-button" id="replayButton" type="button">↻ Recommencer</button>
+        <button class="primary-button" id="printButton" type="button">Imprimer mon bilan</button>
       </div>
     </section>
   </main>
